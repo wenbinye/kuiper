@@ -163,6 +163,27 @@ $builder->addAwareInjection(AwareInjection::create(LoggerAwareInterface::class))
 添加这个声明后，所有实现 `LoggerAwareInterface` 的对象都将由容器统一调用 `setLogger` 方法设置
 容器中 `Psr\Logger\LoggerInterface` 定义的对象。
 
+## 配置项
+
+通过添加 `PropertiesDefinitionSource` 定义可以从容器中直接读取配置。
+当 `application.` 开头的 id，当配置不存在时会返回 null，而不会抛出 `NotFoundException` 异常。
+
+```php
+<?php
+
+use kuiper\di\PropertiesDefinitionSource;
+use kuiper\helper\Properties;
+
+$properties = Properties::create([
+    'redis' => [
+        'host' => 'localhost'
+    ]
+]);
+$builder->addDefinitions(new PropertiesDefinitionSource($properties));
+$container = $builder->build();
+$container->get('redis.host');
+```
+
 ## 通过 composer.json 声明插件机制
 
 ```json
