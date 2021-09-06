@@ -220,9 +220,12 @@ class SwooleServer extends AbstractServer
     private function addPort(ServerPort $port): void
     {
         $serverType = ServerType::fromValue($port->getServerType());
-        /** @var Server\Port $swoolePort */
+        /** @var Server\Port|false $swoolePort */
         $swoolePort = $this->resource->addListener($port->getHost(), $port->getPort(), $port->getSockType());
-        $swoolePort->set($serverType->settings);
+        if (false === $swoolePort) {
+            throw new \RuntimeException("Cannot listen to port {$port->getPort()}");
+        }
+        $swoolePort->set(array_merge($this->getSettings()->toArray(), $serverType->settings));
 
         foreach ($serverType->events as $event) {
             $this->logger->debug(static::TAG."attach $event to port ".$port->getPort());
