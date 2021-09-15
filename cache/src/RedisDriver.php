@@ -32,13 +32,6 @@ class RedisDriver extends AbstractDriver
     protected $prefix;
 
     /**
-     * The cache of indexed keys.
-     *
-     * @var array
-     */
-    protected $keyCache = [];
-
-    /**
      * RedisDriver constructor.
      */
     public function __construct(PoolInterface $redisPool, array $options = [])
@@ -111,7 +104,6 @@ class RedisDriver extends AbstractDriver
         $redis->del($keyReal); // remove direct item.
         if ($this->isGroupKey($key)) {
             $keyString = $this->makeKeyString($key, true);
-            unset($this->keyCache[$keyString]);
             $redis->incr($keyString); // increment index for children items
         }
 
@@ -162,12 +154,8 @@ class RedisDriver extends AbstractDriver
             $pathKey = ':pathdb::'.$keyString;
             $pathKey = $this->prefix.md5($pathKey);
 
-            if (isset($this->keyCache[$pathKey])) {
-                $index = $this->keyCache[$pathKey];
-            } else {
-                $index = $redis->get($pathKey);
-                $this->keyCache[$pathKey] = $index;
-            }
+            $index = $redis->get($pathKey);
+            $this->keyCache[$pathKey] = $index;
 
             //a. cache:::name0:::
             //b. cache:::name0:::sub1:::
